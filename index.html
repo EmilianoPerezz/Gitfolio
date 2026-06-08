@@ -12,6 +12,158 @@
 		<link rel="icon" type="image/png" href="images/logo.png" />
 		<link rel="stylesheet" href="assets/css/main.css" />
 
+	<style>
+		/* ── Lightbox overlay ── */
+		#lightbox-overlay {
+			display: none;
+			position: fixed;
+			inset: 0;
+			z-index: 9999;
+			background: rgba(0, 0, 0, 0.88);
+			align-items: center;
+			justify-content: center;
+			padding: 1.5rem;
+			box-sizing: border-box;
+			animation: lbFadeIn 0.25s ease;
+		}
+		#lightbox-overlay.active {
+			display: flex;
+		}
+		@keyframes lbFadeIn {
+			from { opacity: 0; }
+			to   { opacity: 1; }
+		}
+
+		/* ── Lightbox card ── */
+		#lightbox-card {
+			background: #1e1e1e;
+			border-radius: 10px;
+			max-width: 860px;
+			width: 100%;
+			overflow: hidden;
+			box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+			animation: lbSlideUp 0.28s ease;
+		}
+		@keyframes lbSlideUp {
+			from { transform: translateY(30px); opacity: 0; }
+			to   { transform: translateY(0);    opacity: 1; }
+		}
+
+		/* ── Image container (zoomable) ── */
+		#lightbox-img-wrap {
+			position: relative;
+			width: 100%;
+			max-height: 70vh;
+			overflow: hidden;
+			cursor: zoom-in;
+			background: #111;
+		}
+		#lightbox-img-wrap.zoomed {
+			overflow: auto;
+			cursor: zoom-out;
+		}
+		#lightbox-img {
+			width: 100%;
+			display: block;
+			transition: transform 0.35s ease;
+			transform-origin: top left;
+		}
+		#lightbox-img-wrap.zoomed #lightbox-img {
+			width: auto;
+			max-width: none;
+			transform: scale(2);
+		}
+
+		/* ── Text area ── */
+		#lightbox-info {
+			padding: 1.2rem 1.5rem 1.4rem;
+			color: #e0e0e0;
+		}
+		#lightbox-info h3 {
+			margin: 0 0 0.4rem;
+			font-size: 1.25rem;
+			color: #ffffff;
+			border: none;
+		}
+		#lightbox-info p {
+			margin: 0;
+			font-size: 0.95rem;
+			color: #bbb;
+			line-height: 1.6;
+		}
+
+		/* ── Close button ── */
+		#lightbox-close {
+			position: absolute;
+			top: 0.75rem;
+			right: 1rem;
+			background: rgba(0,0,0,0.55);
+			border: none;
+			border-radius: 50%;
+			width: 36px;
+			height: 36px;
+			font-size: 1.1rem;
+			color: #fff;
+			cursor: pointer;
+			line-height: 36px;
+			text-align: center;
+			z-index: 1;
+			transition: background 0.2s;
+		}
+		#lightbox-close:hover {
+			background: rgba(255,255,255,0.25);
+		}
+
+		/* ── Zoom hint badge ── */
+		#lightbox-zoom-hint {
+			position: absolute;
+			bottom: 0.6rem;
+			left: 50%;
+			transform: translateX(-50%);
+			background: rgba(0,0,0,0.5);
+			color: #ddd;
+			font-size: 0.72rem;
+			padding: 3px 10px;
+			border-radius: 20px;
+			pointer-events: none;
+			letterSpacing: 0.02em;
+		}
+
+		/* ── Clickable project images ── */
+		.features article a.image {
+			cursor: pointer;
+			position: relative;
+			overflow: hidden;
+			outline-offset: 3px;
+		}
+		.features article a.image::after {
+			content: '\1F50D';
+			position: absolute;
+			bottom: 8px;
+			right: 8px;
+			background: rgba(0,0,0,0.55);
+			color: #fff;
+			border-radius: 50%;
+			width: 30px;
+			height: 30px;
+			font-size: 0.85rem;
+			line-height: 30px;
+			text-align: center;
+			opacity: 0;
+			transition: opacity 0.2s;
+		}
+		.features article a.image:hover::after {
+			opacity: 1;
+		}
+		.features article a.image img {
+			transition: transform 0.3s ease, filter 0.3s ease;
+		}
+		.features article a.image:hover img {
+			transform: scale(1.04);
+			filter: brightness(0.85);
+		}
+	</style>
+
 	</head>
 	<body class="is-preload">
 
@@ -80,26 +232,41 @@
 									<h3>Recent Projects</h3>
 									<div class="features">
 										<article>
-											<a href="#" class="image"><img src="images/pic01.jpg" alt="" /></a>
-											<div class="inner">
-												<h4>Apex Garage</h4>
-												<p>A web application for managing automotive services and appointments.</p>
-											</div>
+										<a href="#" class="image lb-trigger"
+										   data-img="images/pic01.jpg"
+										  data-title="Apex Garage"
+										  data-desc="A web application for managing automotive services and appointments.">
+										 <img src="images/pic01.jpg" alt="Apex Garage" />
+										 </a>
+										 <div class="inner">
+										 <h4>Apex Garage</h4>
+										 <p>A web application for managing automotive services and appointments.</p>
+										</div>
 										</article>
 										<article>
-											<a href="#" class="image"><img src="images/pic02.jpg" alt="" /></a>
-											<div class="inner">
-												<h4>Project Two</h4>
-												<p>Soon!</p>
-											</div>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic03.jpg" alt="" /></a>
-											<div class="inner">
-												<h4>Project Three</h4>
-												<p>Soon!</p>
-											</div>
-										</article>
+										 <a href="#" class="image lb-trigger"
+										    data-img="images/pic02.jpg"
+										   data-title="Project Two"
+										   data-desc="Soon!">
+										<img src="images/pic02.jpg" alt="Project Two" />
+										</a>
+										<div class="inner">
+										  <h4>Project Two</h4>
+									<p>Soon!</p>
+								</div>
+							</article>
+							<article>
+								<a href="#" class="image lb-trigger"
+								   data-img="images/pic03.jpg"
+								   data-title="Project Three"
+								   data-desc="Soon!">
+									<img src="images/pic03.jpg" alt="Project Three" />
+								</a>
+								<div class="inner">
+									<h4>Project Three</h4>
+									<p>Soon!</p>
+								</div>
+							</article>
 									</div>
 								</div>
 							</section>
@@ -475,6 +642,21 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 
 			</div>
 
+		<!-- Lightbox Modal -->
+		<div id="lightbox-overlay" role="dialog" aria-modal="true" aria-label="Project image viewer">
+			<div id="lightbox-card">
+				<div id="lightbox-img-wrap">
+					<button id="lightbox-close" aria-label="Close">&#x2715;</button>
+					<img id="lightbox-img" src="" alt="" />
+					<span id="lightbox-zoom-hint">Clic para ampliar · Clic para reducir</span>
+				</div>
+				<div id="lightbox-info">
+					<h3 id="lightbox-title"></h3>
+					<p id="lightbox-desc"></p>
+				</div>
+			</div>
+		</div>
+
 		<!-- Scripts -->
 			<script src="assets/js/jquery.min.js"></script>
 			<script src="assets/js/jquery.scrollex.min.js"></script>
@@ -483,6 +665,60 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+
+			<script>
+				(function () {
+					var overlay   = document.getElementById('lightbox-overlay');
+					var card      = document.getElementById('lightbox-card');
+					var imgEl     = document.getElementById('lightbox-img');
+					var imgWrap   = document.getElementById('lightbox-img-wrap');
+					var titleEl   = document.getElementById('lightbox-title');
+					var descEl    = document.getElementById('lightbox-desc');
+					var closeBtn  = document.getElementById('lightbox-close');
+
+					// Open lightbox
+					document.querySelectorAll('.lb-trigger').forEach(function (link) {
+						link.addEventListener('click', function (e) {
+							e.preventDefault();
+							imgEl.src        = this.dataset.img;
+							titleEl.textContent = this.dataset.title;
+							descEl.textContent  = this.dataset.desc;
+							imgWrap.classList.remove('zoomed');
+							overlay.classList.add('active');
+							document.body.style.overflow = 'hidden';
+						});
+					});
+
+					// Toggle zoom on image click
+					imgWrap.addEventListener('click', function (e) {
+						if (e.target === closeBtn) return;
+						this.classList.toggle('zoomed');
+					});
+
+					// Close via button
+					closeBtn.addEventListener('click', function (e) {
+						e.stopPropagation();
+						closeLightbox();
+					});
+
+					// Close clicking outside the card
+					overlay.addEventListener('click', function (e) {
+						if (e.target === overlay) closeLightbox();
+					});
+
+					// Close with Escape key
+					document.addEventListener('keydown', function (e) {
+						if (e.key === 'Escape') closeLightbox();
+					});
+
+					function closeLightbox() {
+						overlay.classList.remove('active');
+						imgWrap.classList.remove('zoomed');
+						document.body.style.overflow = '';
+						imgEl.src = '';
+					}
+				})();
+			</script>
 
 	</body>
 </html>
