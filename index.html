@@ -38,11 +38,15 @@
 		#lightbox-card {
 			background: #1e1e1e;
 			border-radius: 10px;
-			max-width: 860px;
+			max-width: 900px;
 			width: 100%;
 			overflow: hidden;
 			box-shadow: 0 20px 60px rgba(0,0,0,0.6);
 			animation: lbSlideUp 0.28s ease;
+			transition: max-width 0.35s ease;
+		}
+		#lightbox-overlay.zoomed-mode #lightbox-card {
+			max-width: 98vw;
 		}
 		@keyframes lbSlideUp {
 			from { transform: translateY(30px); opacity: 0; }
@@ -53,25 +57,31 @@
 		#lightbox-img-wrap {
 			position: relative;
 			width: 100%;
-			max-height: 70vh;
 			overflow: hidden;
 			cursor: zoom-in;
 			background: #111;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			max-height: 60vh;
+			transition: max-height 0.35s ease;
 		}
 		#lightbox-img-wrap.zoomed {
-			overflow: auto;
 			cursor: zoom-out;
+			max-height: 85vh;
 		}
 		#lightbox-img {
-			width: 100%;
+			max-width: 100%;
+			max-height: 60vh;
+			width: auto;
+			height: auto;
 			display: block;
-			transition: transform 0.35s ease;
-			transform-origin: top left;
+			object-fit: contain;
+			transition: max-height 0.35s ease, max-width 0.35s ease;
 		}
 		#lightbox-img-wrap.zoomed #lightbox-img {
-			width: auto;
-			max-width: none;
-			transform: scale(2);
+			max-height: 85vh;
+			max-width: 98vw;
 		}
 
 		/* ── Text area ── */
@@ -693,6 +703,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 					imgWrap.addEventListener('click', function (e) {
 						if (e.target === closeBtn) return;
 						this.classList.toggle('zoomed');
+						overlay.classList.toggle('zoomed-mode');
 					});
 
 					// Close via button
@@ -712,7 +723,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 					});
 
 					function closeLightbox() {
-						overlay.classList.remove('active');
+						overlay.classList.remove('active', 'zoomed-mode');
 						imgWrap.classList.remove('zoomed');
 						document.body.style.overflow = '';
 						imgEl.src = '';
