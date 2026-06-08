@@ -175,6 +175,14 @@
 			overflow: hidden;
 			outline-offset: 3px;
 		}
+		.features article a.image img {
+			pointer-events: none;
+			transition: transform 0.3s ease, filter 0.3s ease;
+		}
+		.features article a.image:hover img {
+			transform: scale(1.04);
+			filter: brightness(0.85);
+		}
 		.features article a.image::after {
 			content: '\1F50D';
 			position: absolute;
@@ -190,16 +198,10 @@
 			text-align: center;
 			opacity: 0;
 			transition: opacity 0.2s;
+			pointer-events: none;
 		}
 		.features article a.image:hover::after {
 			opacity: 1;
-		}
-		.features article a.image img {
-			transition: transform 0.3s ease, filter 0.3s ease;
-		}
-		.features article a.image:hover img {
-			transform: scale(1.04);
-			filter: brightness(0.85);
 		}
 	</style>
 
@@ -271,10 +273,10 @@
 									<h3>Recent Projects</h3>
 									<div class="features">
 										<article>
-										<a href="#" class="image lb-trigger"
-										   data-img="images/pic01.jpg"
-										  data-title="Apex Garage"
-										  data-desc="A web application for managing automotive services and appointments.">
+										<a href="javascript:void(0)" class="image lb-trigger"
+										data-img="images/pic01.jpg"
+										data-title="Apex Garage"
+										data-desc="A web application for managing automotive services and appointments.">
 										 <img src="images/pic01.jpg" alt="Apex Garage" />
 										 </a>
 										 <div class="inner">
@@ -283,10 +285,10 @@
 										</div>
 										</article>
 										<article>
-										 <a href="#" class="image lb-trigger"
-										    data-img="images/pic02.jpg"
-										   data-title="Project Two"
-										   data-desc="Soon!">
+										 <a href="javascript:void(0)" class="image lb-trigger"
+										 data-img="images/pic02.jpg"
+										 data-title="Project Two"
+										 data-desc="Soon!">
 										<img src="images/pic02.jpg" alt="Project Two" />
 										</a>
 										<div class="inner">
@@ -295,10 +297,10 @@
 								</div>
 							</article>
 							<article>
-								<a href="#" class="image lb-trigger"
-								   data-img="images/pic03.jpg"
-								   data-title="Project Three"
-								   data-desc="Soon!">
+								<a href="javascript:void(0)" class="image lb-trigger"
+								data-img="images/pic03.jpg"
+								data-title="Project Three"
+								data-desc="Soon!">
 									<img src="images/pic03.jpg" alt="Project Three" />
 								</a>
 								<div class="inner">
@@ -727,9 +729,10 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 					document.querySelectorAll('.lb-trigger').forEach(function (link) {
 						link.addEventListener('click', function (e) {
 							e.preventDefault();
-							imgEl.src              = this.dataset.img;
-							titleEl.textContent    = this.dataset.title;
-							descEl.textContent     = this.dataset.desc;
+							var anchor         = e.currentTarget;
+							imgEl.src              = anchor.dataset.img;
+							titleEl.textContent    = anchor.dataset.title;
+							descEl.textContent     = anchor.dataset.desc;
 							overlay.classList.add('active');
 							document.body.style.overflow = 'hidden';
 						});
@@ -738,6 +741,7 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 					// Clic en imagen del lightbox → pantalla completa
 					imgWrap.addEventListener('click', function (e) {
 						if (e.target === closeBtn) return;
+						if (!imgEl.src || imgEl.src === window.location.href) return;
 						fsImg.src = imgEl.src;
 						fullscreen.classList.add('active');
 					});
