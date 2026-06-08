@@ -38,50 +38,79 @@
 		#lightbox-card {
 			background: #1e1e1e;
 			border-radius: 10px;
-			max-width: 900px;
+			max-width: 860px;
 			width: 100%;
 			overflow: hidden;
 			box-shadow: 0 20px 60px rgba(0,0,0,0.6);
 			animation: lbSlideUp 0.28s ease;
-			transition: max-width 0.35s ease;
-		}
-		#lightbox-overlay.zoomed-mode #lightbox-card {
-			max-width: 98vw;
 		}
 		@keyframes lbSlideUp {
 			from { transform: translateY(30px); opacity: 0; }
 			to   { transform: translateY(0);    opacity: 1; }
 		}
 
-		/* ── Image container (zoomable) ── */
+		/* ── Image container ── */
 		#lightbox-img-wrap {
 			position: relative;
 			width: 100%;
-			overflow: hidden;
-			cursor: zoom-in;
 			background: #111;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			max-height: 60vh;
-			transition: max-height 0.35s ease;
-		}
-		#lightbox-img-wrap.zoomed {
-			cursor: zoom-out;
-			max-height: 85vh;
+			min-height: 200px;
+			max-height: 65vh;
+			cursor: zoom-in;
 		}
 		#lightbox-img {
 			max-width: 100%;
-			max-height: 60vh;
+			max-height: 65vh;
 			width: auto;
 			height: auto;
 			display: block;
 			object-fit: contain;
-			transition: max-height 0.35s ease, max-width 0.35s ease;
 		}
-		#lightbox-img-wrap.zoomed #lightbox-img {
-			max-height: 85vh;
-			max-width: 98vw;
+
+		/* ── Fullscreen zoom overlay ── */
+		#lightbox-fullscreen {
+			display: none;
+			position: fixed;
+			inset: 0;
+			z-index: 10000;
+			background: rgba(0,0,0,0.97);
+			align-items: center;
+			justify-content: center;
+			cursor: zoom-out;
+		}
+		#lightbox-fullscreen.active {
+			display: flex;
+		}
+		#lightbox-fullscreen img {
+			max-width: 95vw;
+			max-height: 95vh;
+			width: auto;
+			height: auto;
+			object-fit: contain;
+			border-radius: 4px;
+			box-shadow: 0 0 40px rgba(0,0,0,0.8);
+		}
+		#lightbox-fullscreen-close {
+			position: absolute;
+			top: 1rem;
+			right: 1.2rem;
+			background: rgba(255,255,255,0.12);
+			border: none;
+			border-radius: 50%;
+			width: 40px;
+			height: 40px;
+			font-size: 1.2rem;
+			color: #fff;
+			cursor: pointer;
+			line-height: 40px;
+			text-align: center;
+			transition: background 0.2s;
+		}
+		#lightbox-fullscreen-close:hover {
+			background: rgba(255,255,255,0.28);
 		}
 
 		/* ── Text area ── */
@@ -246,7 +275,7 @@
 										   data-img="images/pic01.jpg"
 										  data-title="Apex Garage"
 										  data-desc="A web application for managing automotive services and appointments.">
-										 <img src="images/pic01.jpg" alt="Apex Garage" />
+										 <img src="images/pic01.png" alt="Apex Garage" />
 										 </a>
 										 <div class="inner">
 										 <h4>Apex Garage</h4>
@@ -658,13 +687,19 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 				<div id="lightbox-img-wrap">
 					<button id="lightbox-close" aria-label="Close">&#x2715;</button>
 					<img id="lightbox-img" src="" alt="" />
-					<span id="lightbox-zoom-hint">Clic para ampliar · Clic para reducir</span>
+					<span id="lightbox-zoom-hint">&#128269; Clic en la imagen para ver a pantalla completa</span>
 				</div>
 				<div id="lightbox-info">
 					<h3 id="lightbox-title"></h3>
 					<p id="lightbox-desc"></p>
 				</div>
 			</div>
+		</div>
+
+		<!-- Fullscreen zoom -->
+		<div id="lightbox-fullscreen">
+			<button id="lightbox-fullscreen-close" aria-label="Cerrar zoom">&#x2715;</button>
+			<img id="lightbox-fullscreen-img" src="" alt="" />
 		</div>
 
 		<!-- Scripts -->
@@ -678,53 +713,65 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 
 			<script>
 				(function () {
-					var overlay   = document.getElementById('lightbox-overlay');
-					var card      = document.getElementById('lightbox-card');
-					var imgEl     = document.getElementById('lightbox-img');
-					var imgWrap   = document.getElementById('lightbox-img-wrap');
-					var titleEl   = document.getElementById('lightbox-title');
-					var descEl    = document.getElementById('lightbox-desc');
-					var closeBtn  = document.getElementById('lightbox-close');
+					var overlay    = document.getElementById('lightbox-overlay');
+					var imgEl      = document.getElementById('lightbox-img');
+					var imgWrap    = document.getElementById('lightbox-img-wrap');
+					var titleEl    = document.getElementById('lightbox-title');
+					var descEl     = document.getElementById('lightbox-desc');
+					var closeBtn   = document.getElementById('lightbox-close');
+					var fullscreen = document.getElementById('lightbox-fullscreen');
+					var fsImg      = document.getElementById('lightbox-fullscreen-img');
+					var fsClose    = document.getElementById('lightbox-fullscreen-close');
 
-					// Open lightbox
+					// Abrir lightbox al clic en proyecto
 					document.querySelectorAll('.lb-trigger').forEach(function (link) {
 						link.addEventListener('click', function (e) {
 							e.preventDefault();
-							imgEl.src        = this.dataset.img;
-							titleEl.textContent = this.dataset.title;
-							descEl.textContent  = this.dataset.desc;
-							imgWrap.classList.remove('zoomed');
+							imgEl.src              = this.dataset.img;
+							titleEl.textContent    = this.dataset.title;
+							descEl.textContent     = this.dataset.desc;
 							overlay.classList.add('active');
 							document.body.style.overflow = 'hidden';
 						});
 					});
 
-					// Toggle zoom on image click
+					// Clic en imagen del lightbox → pantalla completa
 					imgWrap.addEventListener('click', function (e) {
 						if (e.target === closeBtn) return;
-						this.classList.toggle('zoomed');
-						overlay.classList.toggle('zoomed-mode');
+						fsImg.src = imgEl.src;
+						fullscreen.classList.add('active');
 					});
 
-					// Close via button
+					// Cerrar pantalla completa
+					function closeFullscreen() {
+						fullscreen.classList.remove('active');
+						fsImg.src = '';
+					}
+					fsClose.addEventListener('click', function (e) {
+						e.stopPropagation();
+						closeFullscreen();
+					});
+					fullscreen.addEventListener('click', function (e) {
+						if (e.target !== fsClose) closeFullscreen();
+					});
+
+					// Cerrar lightbox
 					closeBtn.addEventListener('click', function (e) {
 						e.stopPropagation();
 						closeLightbox();
 					});
-
-					// Close clicking outside the card
 					overlay.addEventListener('click', function (e) {
 						if (e.target === overlay) closeLightbox();
 					});
-
-					// Close with Escape key
 					document.addEventListener('keydown', function (e) {
-						if (e.key === 'Escape') closeLightbox();
+						if (e.key === 'Escape') {
+							if (fullscreen.classList.contains('active')) closeFullscreen();
+							else closeLightbox();
+						}
 					});
 
 					function closeLightbox() {
-						overlay.classList.remove('active', 'zoomed-mode');
-						imgWrap.classList.remove('zoomed');
+						overlay.classList.remove('active');
 						document.body.style.overflow = '';
 						imgEl.src = '';
 					}
